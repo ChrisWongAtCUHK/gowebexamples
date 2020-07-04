@@ -1,8 +1,9 @@
 package main
 
 import (
-    "fmt"
-    "net/http"
+	"fmt"
+	"github.com/gorilla/mux"
+	"net/http"
 	"os"
 )
 
@@ -12,12 +13,15 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hello, you've requested: %s\n", r.URL.Path)
-    })
+	r := mux.NewRouter()
 
-	fs := http.FileServer(http.Dir("static/"))
-    http.Handle("/static/", http.StripPrefix("/static/", fs))
+	r.HandleFunc("/books/{title}/page/{page}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		title := vars["title"]
+		page := vars["page"]
 
-    http.ListenAndServe(":" + port, nil)
+		fmt.Fprintf(w, "You've requested the book: %s on page %s\n", title, page)
+	})
+
+	http.ListenAndServe(":"+port, r)
 }
